@@ -1,0 +1,89 @@
+services:
+  # webapp:
+  #   build:
+  #     context: ./webapp
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NODE_ENV=development
+  #   volumes:
+  #     - ./webapp:/app
+  #     - /app/node_modules
+  #   command: npm run dev
+  #   depends_on:
+  #     - mailer
+  #     - encoder
+  #     # - search
+  #     # - elasticsearch
+
+  encoder:
+    build:
+      context: ./encoder
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: uvicorn app:app --host 0.0.0.0 --port 8001
+
+  # mailer:
+  #   build:
+  #     context: ./mailer
+  #   ports:
+  #     - "3002:3002"
+  #   environment:
+  #     - NODE_ENV=production
+  #     - SMTP_HOST=maildev
+  #     - SMTP_PORT=1025
+  #   volumes:
+  #     - ./mailer:/app
+  #   command: node server.js
+  #   depends_on:
+  #     - maildev
+
+  # maildev:
+  #   image: maildev/maildev:latest
+  #   container_name: maildev
+  #   ports:
+  #     - "1025:1025"  # SMTP port
+  #     - "1080:1080"  # Web interface port
+
+  # search:
+  #   build:
+  #     context: ./search
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3001:3001"
+  #   environment:
+  #     - ELASTICSEARCH_HOST=http://elasticsearch:9200
+  #     - API_BASE_URL=http://host.docker.internal:8000
+  #   depends_on:
+  #     - elasticsearch
+
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+  #   container_name: elasticsearch
+  #   environment:
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #   ports:
+  #     - "9200:9200"  # Elasticsearch HTTP
+  #     - "9300:9300"  # Elasticsearch transport
+  #   volumes:
+  #     - es_data:/usr/share/elasticsearch/data
+
+  appmobile:
+      build:
+        context: ./mobile
+      ports:
+        - "19000:19000"  # Expo app
+        - "19001:19001"  # Metro bundler
+        - "8081:8081"  # Expo web
+      environment:
+        - EXPO_USE_DEV_SERVER=true
+      volumes:
+        - ./appmobile:/app
+        - /app/node_modules
+      command: npm start
+
+volumes:
+  es_data:
